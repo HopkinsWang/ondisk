@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+option go_package = "./";
+
+package proto;
+
+service RaftdService{
+  rpc Put (putRequest) returns (putResponse){};
+  rpc Get(getRequest) returns(getResponde){};
+}
+
+enum Status {
+  SUCCESS = 0;
+  FAILED = 1;
+}
+
+message putRequest{
+  string key =1;
+  string val =2;
+  uint64 ver =3;  //在 db中的序号
+}
+
+message putResponse{
+  Status status=1;
+}
+
+message getRequest{
+  string key=1;
+  uint64 ver =2;
+}
+
+message getResponde{
+  string key =1;
+  string val =2;
+  uint64 ver =3;  //在 db中的序号
+}
