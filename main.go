@@ -45,7 +45,7 @@ const (
 	GET
 )
 
-var(
+var (
 	LocalhostCmd = "ifconfig eth0 | grep \"inet \" | awk -F \":\" '{print $1}' | awk '{print $2}'"
 )
 
@@ -98,23 +98,23 @@ func main() {
 		signal.Ignore(syscall.Signal(0xd))
 	}
 	initialMembers := make(map[uint64]string)
-	if len(*addr)==0{
+	if len(*addr) == 0 {
 		panic("addr is null ondesk")
 	}
 
-	exe_res, exe_err,_err:= ExecExternalScript(LocalhostCmd)
-	if _err!=nil || exe_err!=""{
-		log.Printf("exec_err: %v",_err)
+	exe_res, exe_err, _err := ExecExternalScript(LocalhostCmd)
+	log.Printf("exe_res=%v", exe_res)
+	if _err != nil || exe_err != "" {
+		log.Printf("exec_err: %v", _err)
 	}
 
-	old_addr := strings.Split(*addr,":")
-	newlocalAddr := fmt.Sprintf("%v:%v",exe_res,old_addr[1])
+	old_addr := strings.Split(*addr, ":")
+	newlocalAddr := fmt.Sprintf("%v:%v", exe_res, old_addr[1])
 
-	log.Printf("oldAddr: %v:%v, newAddr: %v",old_addr[0],old_addr[1],newlocalAddr)
-	if *bootstrap{
+	log.Printf("oldAddr: %v:%v, newAddr: %v", old_addr[0], old_addr[1], newlocalAddr)
+	if *bootstrap {
 		initialMembers[1] = newlocalAddr
 	}
-
 
 	fmt.Fprintf(os.Stdout, "node address: %s\n", newlocalAddr)
 	logger.GetLogger("raft").SetLevel(logger.ERROR)
@@ -146,16 +146,15 @@ func main() {
 		panic(err)
 	}
 
-
 	if err := nh.StartOnDiskReplica(initialMembers, *join, NewDiskKV, rc); err != nil {
 		fmt.Fprintf(os.Stderr, "failed to add cluster, %v\n", err)
 		os.Exit(1)
 	}
 
-	rs_port := 70000+ *replicaID
+	rs_port := 70000 + *replicaID
 
-	raftserver:= NewraftServer()
-	raftserver.nh =nh
+	raftserver := NewraftServer()
+	raftserver.nh = nh
 	raftserver.SelfAddr = *addr
 	raftserver.SelfPort = rs_port
 	//raftserver.Setdockeraddr(fmt.Sprintf("%v:%v",exe_res,rs_port))

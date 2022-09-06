@@ -10,6 +10,7 @@ require (
 	github.com/cockroachdb/pebble v0.0.0-20220407171941-2120d145e292
 	github.com/lni/dragonboat/v4 v4.0.0-20220830122730-42573c0b37fc
 	github.com/lni/goutils v1.3.1-0.20220604063047-388d67b4dbc4
+	github.com/wonderivan/logger v1.0.0
 	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.27.1
 )

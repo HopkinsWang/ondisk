@@ -1,20 +1,23 @@
 package main
 
 import (
+	"context"
 	//"bytes"
 	"log"
 	//"os"
+	logger "github.com/wonderivan/logger"
 	"os/exec"
 	"strings"
 	"syscall"
-	"context"
 )
+
 var cancelFunc context.CancelFunc
 
-func ExecExternalScript(cmdTxt string) (string,string, error) {
+func ExecExternalScript(cmdTxt string) (string, string, error) {
 	//logger.Debug("Start execExternalScript! ")
 	//log.Printf("           ====================      start execExternalScript            =============")
-	//logger.Debug("start exec %s.", cmdTxt)
+
+	logger.Debug("start exec %s.", cmdTxt)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancelFunc = cancel
@@ -35,7 +38,7 @@ func ExecExternalScript(cmdTxt string) (string,string, error) {
 		log.Printf("current pgid [%v]", pgid)
 		return syscall.Kill(-pgid, syscall.SIGKILL) // note the minus sign
 	}
-	log.Printf("%v",killFunc())
+	log.Printf("%v", killFunc())
 
 	if err := cmd.Wait(); err != nil {
 		log.Printf("script cmd.wait(), err: %v", err)
@@ -50,6 +53,8 @@ func ExecExternalScript(cmdTxt string) (string,string, error) {
 	//}()
 	//time.Sleep(1 * time.Second)
 	//cmd.Process.Kill()
-	log.Printf("              =================      execExternalScript finished         ================")
-	return stdout.String(),stderr.String(),nil
+	log.Printf("              =================      execExternalScript finished" +
+		"         ================")
+
+	return stdout.String(), stderr.String(), nil
 }
