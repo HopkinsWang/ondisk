@@ -282,7 +282,7 @@ type DiskKV struct {
 	aborted     bool
 }
 
-// NewDiskKV creates a new disk kv test state machine.
+// NewDiskKV creates a new disk kv wqtest state machine.
 func NewDiskKV(clusterID uint64, nodeID uint64) sm.IOnDiskStateMachine {
 	d := &DiskKV{
 		clusterID: clusterID,
