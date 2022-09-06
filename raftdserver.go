@@ -1,61 +1,70 @@
 package main
 
 import (
-	// pb "RingAllReduce_29server/ondisk/proto"
-	pb "github.com/HopkinsWang/ondisk/proto"
+	pb "RingAllReduce_29server/ondisk/proto"
+	// pb "github.com/HopkinsWang/ondisk/proto"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/lni/dragonboat"
 	"github.com/lni/goutils/syncutil"
+	"google.golang.org/grpc"
+	"log"
+	"net"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 )
 
+var (
+	Default_port = 61000
+)
+
 type raftServer struct {
 	pb.RaftdServiceServer
-	dockerAddr string
-	hostAddr string
+	//dockerAddr string
+	SelfAddr string
+	SelfIp string
+	SelfPort int
+	RaftID int
 	nh *dragonboat.NodeHost
 
-	send_ch chan string
-	receive_get_ch chan string
-	receive_put_ch chan string
-
-	cacheDB map[string]KVData
+	//send_ch chan string
+	//receive_get_ch chan string
+	//receive_put_ch chan string
+	//
+	//cacheDB map[string]KVData
 
 
 }
 
-func NewraftServer() *raftServer{
-	return &raftServer{}
+func NewraftServer() *raftServer {
+	return &raftServer{SelfAddr: "0.0.0.0:61000",SelfIp: "0.0.0.0",SelfPort: Default_port,RaftID: 0}
 }
 
-func (rs *raftServer)Setdockeraddr(addr string) error{
+func (rs *raftServer)SetSelfaddr(addr string) error{
 	if IsvalidAddr(addr){
-		rs.dockerAddr = addr
+		rs.SelfAddr = addr
 		return nil
 	}
-	return errors.New(" addr is invalid!")
+	return nil
 }
 
 func (rs *raftServer) Getdockeraddr() string{
-	return rs.dockerAddr
+	return rs.SelfAddr
 }
 
-func (rs *raftServer)Sethostaddr(addr string) error{
-	if IsvalidAddr(addr){
-		rs.hostAddr = addr
-		return nil
-	}
-	return errors.New(" addr is invalid!")
-}
-func (rs *raftServer) Gethostaddr() string{
-	return rs.hostAddr
-}
+//func (rs *raftServer)Sethostaddr(addr string) error{
+//	if IsvalidAddr(addr){
+//		rs.hostAddr = addr
+//		return nil
+//	}
+//	return errors.New(" addr is invalid!")
+//}
+//func (rs *raftServer) Gethostaddr() string{
+//	return rs.hostAddr
+//}
 
 func IsvalidAddr(addr string) bool{    //判断地址合法性
 	if addr ==""{
@@ -129,4 +138,32 @@ func (rs *raftServer) Get(ctx context.Context,req *pb.GetRequest)(*pb.GetRespond
 		cancel()
 	})
 	return reponse,nil
+}
+
+func (rs *raftServer) Init() error{
+	//开启服务端
+	rs.StartServer()
+	return nil
+}
+
+func (rs *raftServer) StartServer() error{
+	port := fmt.Sprintf("%v",rs.SelfPort)
+	lis, err := net.Listen("tcp", "0.0.0.0:"+port)
+	if err != nil {
+		log.Printf("Startserver Err: %v", err)
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	size := 512 * 1024 * 1024
+	 options := []grpc.ServerOption{
+		grpc.MaxRecvMsgSize(size),
+		grpc.MaxSendMsgSize(size),
+	}
+	grpcServer := grpc.NewServer(options...)
+	pb.RegisterRaftdServiceServer(grpcServer,rs)
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+
+	return nil
 }

@@ -108,15 +108,15 @@ func main() {
 	}
 
 	old_addr := strings.Split(*addr,":")
-	newloaclAddr := fmt.Sprintf("%v:%v",exe_res,old_addr[1])
+	newlocalAddr := fmt.Sprintf("%v:%v",exe_res,old_addr[1])
 
-	log.Printf("oldAddr: %v:%v, newAddr: %v",old_addr[0],old_addr[1],newloaclAddr)
+	log.Printf("oldAddr: %v:%v, newAddr: %v",old_addr[0],old_addr[1],newlocalAddr)
 	if *bootstrap{
-		initialMembers[1] = newloaclAddr
+		initialMembers[1] = newlocalAddr
 	}
 
 
-	fmt.Fprintf(os.Stdout, "node address: %s\n", newloaclAddr)
+	fmt.Fprintf(os.Stdout, "node address: %s\n", newlocalAddr)
 	logger.GetLogger("raft").SetLevel(logger.ERROR)
 	logger.GetLogger("rsm").SetLevel(logger.WARNING)
 	logger.GetLogger("transport").SetLevel(logger.WARNING)
@@ -139,7 +139,7 @@ func main() {
 		WALDir:         datadir,
 		NodeHostDir:    datadir,
 		RTTMillisecond: 200,
-		RaftAddress:    newloaclAddr,
+		RaftAddress:    newlocalAddr,
 	}
 	nh, err := dragonboat.NewNodeHost(nhc)
 	if err != nil {
@@ -152,10 +152,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	rs_port := 70000+ *replicaID
+
 	raftserver:= NewraftServer()
 	raftserver.nh =nh
-	raftserver.Setdockeraddr(newloaclAddr)
-	raftserver.Sethostaddr(*addr)
+	raftserver.SelfAddr = *addr
+	raftserver.SelfPort = rs_port
+	//raftserver.Setdockeraddr(fmt.Sprintf("%v:%v",exe_res,rs_port))
+	//raftserver.Sethostaddr(fmt.Sprintf("%v:%v",old_addr[0], rs_port))
+	raftserver.Init()
 	//consoleStopper := syncutil.NewStopper()
 	printUsage()
 
