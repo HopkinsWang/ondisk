@@ -1,9 +1,17 @@
-module github.com/lni/dragonboat-example/v3
+module ondisk
+
+go 1.17
+
+replace git.apache.org/thrift.git v0.16.0 => github.com/apache/thrift v0.16.0
+
+replace github.com/HopkinsWang/ondisk/proto => D:/Code/ondisk/proto
 
 require (
 	github.com/cockroachdb/pebble v0.0.0-20220407171941-2120d145e292
-	github.com/lni/dragonboat/v4 v4.0.0-20220604122422-e23d27bb8ff4
+	github.com/lni/dragonboat/v4 v4.0.0-20220830122730-42573c0b37fc
 	github.com/lni/goutils v1.3.1-0.20220604063047-388d67b4dbc4
+	google.golang.org/grpc v1.49.0
+	google.golang.org/protobuf v1.27.1
 )
 
 require (
@@ -16,6 +24,7 @@ require (
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/getsentry/sentry-go v0.12.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -26,11 +35,10 @@ require (
 	github.com/hashicorp/go-sockaddr v1.0.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.0 // indirect
 	github.com/hashicorp/memberlist v0.3.1 // indirect
-	github.com/juju/ratelimit v1.0.2-0.20191002062651-f60b32039441 // indirect
 	github.com/klauspost/compress v1.11.7 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/lni/vfs v0.2.1-0.20220408085249-8be85be1c3c1 // indirect
+	github.com/lni/vfs v0.2.1-0.20220616104132-8852fd867376 // indirect
 	github.com/miekg/dns v1.1.26 // indirect
 	github.com/pierrec/lz4/v4 v4.1.14 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -42,6 +50,6 @@ require (
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
 	golang.org/x/net v0.0.0-20211008194852-3b03d305991f // indirect
 	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
+	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/genproto v0.0.0-20210624195500-8bfb893ecb84 // indirect
 )
-
-go 1.17
