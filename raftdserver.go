@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	Default_port = 61000
+	Default_port = 51000
 )
 
 type raftServer struct {
@@ -39,7 +39,7 @@ type raftServer struct {
 }
 
 func NewraftServer() *raftServer {
-	return &raftServer{SelfAddr: "0.0.0.0:61000", SelfIp: "0.0.0.0", SelfPort: Default_port, RaftID: 0}
+	return &raftServer{SelfAddr: "0.0.0.0:51000", SelfIp: "0.0.0.0", SelfPort: Default_port, RaftID: 0}
 }
 
 func (rs *raftServer) SetSelfaddr(addr string) error {
@@ -100,7 +100,10 @@ func (rs *raftServer) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutRespo
 	raftStopper := syncutil.NewStopper()
 	raftStopper.RunWorker(func() {
 		cs := rs.nh.GetNoOPSession(ExampleShardID)
-		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		log.Printf("raftdsever cs: shardid =%v|", cs.ShardID)
+		log.Printf("nodehost = %v,nodehostInfo=%v", rs.nh, rs.nh.GetNodeHostInfo(dragonboat.NodeHostInfoOption{SkipLogInfo: true}))
+
+		out_ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		kv := &KVData{
 			Key: req.Key,
 			Val: req.Val,
@@ -109,9 +112,10 @@ func (rs *raftServer) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutRespo
 		if err != nil {
 			panic(err)
 		}
-		_, err = rs.nh.SyncPropose(ctx, cs, data)
+		_, err = rs.nh.SyncPropose(out_ctx, cs, data)
+
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "SyncPropose returned error %v\n", err)
+			fmt.Fprintf(os.Stderr, "SyncPropose returned error: %v\n", err)
 		}
 		cancel()
 	})
@@ -119,22 +123,24 @@ func (rs *raftServer) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutRespo
 }
 
 func (rs *raftServer) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponde, error) {
+
 	reponse := &pb.GetResponde{Key: req.Key}
-	raftStopper := syncutil.NewStopper()
-	raftStopper.RunWorker(func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-		result, err := rs.nh.SyncRead(ctx, ExampleShardID, []byte(req.Key))
+	//raftStopper := syncutil.NewStopper()
+	//raftStopper.RunWorker(func() {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	result, err := rs.nh.SyncRead(ctx, ExampleShardID, []byte(req.Key))
 
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "SyncRead returned error %v\n", err)
-			reponse.Val = ""
-		} else {
-			fmt.Fprintf(os.Stdout, "query key: %s, result: %s\n", req.Key, result)
-			reponse.Val = fmt.Sprintf("%v", result)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "SyncRead returned error %v\n", err)
+		reponse.Val = ""
+	} else {
+		fmt.Fprintf(os.Stdout, "query key: %s, result: %s\n", req.Key, result)
+		reponse.Val = fmt.Sprintf("%v", result)
 
-		}
-		cancel()
-	})
+	}
+	cancel()
+	//})
+	log.Printf("response: key=%v, val=%v", reponse.Key, reponse.Val)
 	return reponse, nil
 }
 
